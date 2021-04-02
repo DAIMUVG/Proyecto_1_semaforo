@@ -41,6 +41,7 @@ PROCESSOR 16F887
   PSECT udata_bank0 ;common memory
     cont:	DS  2 ;2 byte apartado
     banderas:	DS  1
+    estado:	DS  1
     display_var:    DS	7 ;7 byte apartado
   PSECT udata_shr ;common memory
     w_temp:	DS  1;1 byte apartado
@@ -63,7 +64,9 @@ PROCESSOR 16F887
   isr:
     btfsc   T0IF	    ;Si el timer0  levanta ninguna bandera de interrupcion
     call    TMR0_interrupt  ;Rutina de interrupcion del timer0
-
+    
+     btfsc   RBIF	    ;Si el puerto B levanta la banderas de interrupcion
+     call    IOCB_interrupt  ;Rutina de interrupcion del puerto B
   pop:
     swapf   STATUS_TEMP, W
     movwf   STATUS
@@ -145,6 +148,21 @@ PROCESSOR 16F887
 	bsf	PORTD, 7	    ;seteamos el pin del puerto D para controlar que display se mostrara
 	goto    siguientedisplay
 	
+    IOCB_interrupt:
+	movf    estado, W
+	clrf    PCLATH		
+	andlw   0x03
+	addwf   PCL
+	goto    estado0
+	goto    estado1
+	goto    estado2; 0
+	
+    estado1:
+    
+    estado2:
+    
+    estado3:
+	
   PSECT code, delta=2, abs
   ORG 100h	;Posición para el código
  ;------------------ TABLA -----------------------
@@ -202,7 +220,7 @@ PROCESSOR 16F887
     call    config_tmr0	    ;Configuracion del timer 0
     ;call    config_tmr1	    ;configuracion del timer 1
     
-    ;call    config_IE	    ;Configuracion de las interrupciones
+    call    config_IE	    ;Configuracion de las interrupciones
 ;----------loop principal---------------------
  loop:
     NOP
@@ -227,6 +245,22 @@ PROCESSOR 16F887
     bsf	    PS0		;PS = 111 Tiempo en ejecutar , 256
     
     Reiniciar_tmr0
+    return
+    
+config_IE:	    
+    banksel PIE1    ;llamamos al banco donde esta ubicado PIE
+    bsf	    TMR1IE  ;habilitamos las interrupciones correspondientes
+    bsf	    TMR2IE
+    bsf	    T0IE
+    banksel INTCON
+    bsf	    RBIE	;Se encuentran en INTCON
+    bcf	    RBIF	;Limpiamos bandera
+    banksel T1CON
+    bsf	    GIE	    ;Habilitar en general las interrupciones, Globales
+    bsf	    PEIE    ;habilitamos las interrupciones de los perifericos
+    bcf	    TMR1IF  
+    bcf	    TMR2IF
+    bcf	    T0IF	;Limpiamos bandera
     return
 end
 
