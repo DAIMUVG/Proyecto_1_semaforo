@@ -9,51 +9,53 @@
 ;Creado:	23 mar, 2021
 ;Ultima modificacion:  
 ;-----------------------------------
+      
 PROCESSOR 16F887
 #include <xc.inc>
 
 ; configuración word1
- CONFIG FOSC=INTRC_NOCLKOUT ;Oscilador interno sin salidas
- CONFIG WDTE=OFF	    ;WDT disabled (reinicio repetitivo del pic)
- CONFIG PWRTE=ON	    ;PWRT enabled (espera de 72ms al iniciar
- CONFIG MCLRE=OFF	    ;pin MCLR se utiliza como I/O
- CONFIG CP=OFF		    ;sin protección de código
- CONFIG CPD=OFF		    ;sin protección de datos
+ CONFIG FOSC=INTRC_NOCLKOUT //Oscilador interno sin salidas
+ CONFIG WDTE=OFF	    //WDT disabled (reinicio repetitivo del pic)
+ CONFIG PWRTE=ON	    //PWRT enabled (espera de 72ms al iniciar
+ CONFIG MCLRE=OFF	    //pin MCLR se utiliza como I/O
+ CONFIG CP=OFF		    //sin protección de código
+ CONFIG CPD=OFF		    //sin protección de datos
  
- CONFIG BOREN=OFF	    ;sin reinicio cuando el voltaje baja de 4v
- CONFIG IESO=OFF	    ;Reinicio sin cambio de reloj de interno a externo
- CONFIG FCMEN=OFF	    ;Cambio de reloj externo a interno en caso de falla
- CONFIG LVP=ON		    ;Programación en bajo voltaje permitida
+ CONFIG BOREN=OFF	    //sin reinicio cuando el voltaje baja de 4v
+ CONFIG IESO=OFF	    //Reinicio sin cambio de reloj de interno a externo
+ CONFIG FCMEN=OFF	    //Cambio de reloj externo a interno en caso de falla
+ CONFIG LVP=ON		    //Programación en bajo voltaje permitida
  
 ;configuración word2
-  CONFIG WRT=OFF	;Protección de autoescritura 
-  CONFIG BOR4V=BOR40V	;Reinicio abajo de 4V 
+  CONFIG WRT=OFF	//Protección de autoescritura 
+  CONFIG BOR4V=BOR40V	//Reinicio abajo de 4V 
 
  MODO	EQU 0
  INC	EQU 1
  DECRE	EQU 2
 	
-reiniciar_Tmr0 macro	;macro
-    banksel TMR0	;Banco de TMR0
-    movlw   255		;236ms
+reiniciar_Tmr0 macro	//macro
+    banksel TMR0	//Banco de TMR0
+    movlw   25
+    ;movf    T0_Actual, W
     movwf   TMR0        
-    bcf	    T0IF	;Limpiar bandera de overflow para reinicio 
+    bcf	    T0IF	//Limpiar bandera de overflow para reinicio 
     endm
-reiniciar_Tmr1 macro	;macro reiniciar Tmr1
-    movlw   0x0B	;1 segundo
-    movwf   TMR1H	;Asignar valor a TMR1H
+reiniciar_Tmr1 macro	//macro reiniciar Tmr1
+    movlw   0x0B	//1 segundo
+    movwf   TMR1H	//Asignar valor a TMR1H
     movlw   0xDC
-    movwf   TMR1L	;Asignar valor a TMR1L
-    bcf	    TMR1IF	;Limpiar bandera de carry/interrupción de Tmr1
+    movwf   TMR1L	//Asignar valor a TMR1L
+    bcf	    TMR1IF	//Limpiar bandera de carry/interrupción de Tmr1
     endm
-reiniciar_tmr2 macro	;Macro reinicio Tmr2
-    banksel PR2		;250ms
-    movlw   244		;Mover valor a PR2
+reiniciar_tmr2 macro	//Macro reinicio Tmr2
+    banksel PR2		//250ms
+    movlw   244		//Mover valor a PR2
     movwf   PR2		
     
     banksel T2CON
-    clrf    TMR2	;Limpiar registro TMR2
-    bcf	    TMR2IF	;Limpiar bandera para reinicio 
+    clrf    TMR2	//Limpiar registro TMR2
+    bcf	    TMR2IF	//Limpiar bandera para reinicio 
     endm
     
   PSECT udata_bank0 ;common memory
@@ -64,8 +66,8 @@ reiniciar_tmr2 macro	;Macro reinicio Tmr2
     sem_1:	  DS 1
     sem_2:        DS 1
     sem_3:        DS 1
-    S1_temp:	  DS 1
-    S1:		  DS 1
+    S1_temp:  DS 1
+    S1:	  DS 1
     
     S2_temp:     DS 1
     S2:		 DS 1
@@ -114,7 +116,7 @@ reiniciar_tmr2 macro	;Macro reinicio Tmr2
     btfsc   T0IF
     call    TMR0_interrupt  ;Rutina de interrupcion del timer 0
     
-    btfsc   TMR2IF	    
+    btfsc   TMR2IF
     call    TMR2_interrupt  ;Rutina de interrupcion del timer 2
   pop:
     movf    PCLATH_TEMP, W
@@ -129,40 +131,39 @@ TMR0_interrupt:
     reiniciar_Tmr0	;2 ms
     Bcf	    STATUS, 0
     clrf    PORTD 
-    btfsc   banderas, 0	      ;Revisar bit 1 de banderas
+    btfsc   banderas, 0	      ;Revisar bit 0 de banderas
     goto    display0	      ;Llamar a subrutina de displayunidad	    ;
-    btfsc   banderas, 1	      ;Revisar bit 2 de banderas
+    btfsc   banderas, 1	      ;Revisar bit 1 de banderas
     goto    display1          ;Llamar a subrutina de displaydecena
     btfsc   banderas, 2	      ;Revisar bit 2 de banderas
     goto    display2	      ;Llamar a subrutina de displaydecena
-    btfsc   banderas, 3	      ;Revisar bit 2 de banderas
+    btfsc   banderas, 3	      ;Revisar bit 3 de banderas
     goto    display3	      ;Llamar a subrutina de displaydecena
-    
-    btfsc   banderas, 4	      ;Revisar bit 2 de banderas
+    btfsc   banderas, 4	      ;Revisar bit 4 de banderas
     goto    display4	      ;Llamar a subrutina de displaydecena
-    btfsc   banderas, 5	      ;Revisar bit 2 de banderas
+    btfsc   banderas, 5	      ;Revisar bit 5 de banderas
     goto    display5	      ;Llamar a subrutina de displaydecena
-    btfsc   banderas, 6	      ;Revisar bit 2 de banderas
+    btfsc   banderas, 6	      ;Revisar bit 6 de banderas
     goto    display6	      ;Llamar a subrutina de displaydecena
-    btfsc   banderas, 7	      ;Revisar bit 2 de banderas
+    btfsc   banderas, 7	      ;Revisar bit 7 de banderas
     goto    display7	      ;Llamar a subrutina de displaydecena
     movlw   00000001B
     movwf   banderas
-;---------------Control de luces-----------------------------------------------
-Luces_semaforo:    
-    movlw   4			;luz amarilla semaforo 3
-    subwf   sem_3, 0	;se le resta un valor de 4 a la variable sem_3
-    btfss   STATUS, 0	;Evalua si un carry
-    goto    amarillo3	;Vamos a la rutina amarillo
-    movlw   7		;luz parpadeante del semaforo 3
-    subwf   sem_3, 0	;se le resta un valor de 7 a la variable sem_3
-    btfss   STATUS, 0	;Evalua si un carry
-    goto    Parpadeo3	;Vamos de parpadeo
+
+Control_Luces:    
+    movlw   4		    ;Parpadeo y luz amarilla semaforo 3
+    subwf   sem_3, 0	    ;se le resta un valor de 4 a la variable sem_3
+    btfss   STATUS, 0	    ;Evalua si un carry
+    goto    amarillo3	    ;Vamos a la rutina amarillo
+    movlw   7		    ;luz parpadeante del semaforo 3
+    subwf   sem_3, 0	    ;se le resta un valor de 7 a la variable sem_3
+    btfss   STATUS, 0	    ;Evalua si un carry
+    goto    Parpadeo3	    ;Vamos de parpadeo
     
-    call    luces2	;Hicimos una ruina de luces porque el programa no lo aceptaba solo asi
+    call    tit2	    ;Hicimos una ruina de luces porque el programa no lo aceptaba solo asi
     
-    movlw   4			;titileo Sem1
-    subwf   sem_1, 0	;Guarda en w
+    movlw   4		    ;Parpadeo y luz amarilla semaforo 1
+    subwf   sem_1, 0	
     btfss   STATUS, 0
     goto    amarillo1
     movlw   7
@@ -171,7 +172,7 @@ Luces_semaforo:
     goto    Parpadeo1
     return
 
-luces2:
+tit2:			    ;Parpadeo y luz amarilla semaforo 2
     movlw   4
     subwf   sem_2, 0	;Guarda en w
     btfss   STATUS, 0
@@ -204,13 +205,13 @@ apagardisp:
     bcf     PORTA, 2	;Apagamos la led verde del semaforo 1
     bcf	    PORTA, 5	;Apagamos la led verde del semaforo 2
     bcf	    PORTE, 2	;Apagamos la led verde del semaforo 3
-    RETURN
+    return
 
 amarillo1:		;Rutina de interrupcion de la led amarilla
     bcf	    PORTA, 0	;Apagamos la led roja
     bsf	    PORTA, 1	;Encendemos la led amarilla
     bcf	    PORTA, 2	;Apagamos la led roja
-    movlw   0		;ponemos el valor de 0 a w
+    movlw   0		;Parpadeo semaforo 1
     subwf   sem_1, 0	;Restamos el valor de w a sem_1
     btfsc   STATUS, 2	;Revisamos la bandera de Zero Bit
     goto    rojo1	;Vamos a la rutina de interrupcion de rojo
@@ -219,12 +220,11 @@ rojo1:
     bcf	    PORTA, 1	;Apagamos la led amarilla
     bsf	    PORTA, 0	;Encendemos la led roja
     return   
-    
 amarillo2:
     bcf	    PORTA, 3
     bsf	    PORTA, 4
     bcf	    PORTA, 5
-    movlw   0			;titileo Sem1
+    movlw   0		;Parpadeo semaforo 2
     subwf   sem_2, 0	;Guarda en w
     btfsc   STATUS, 2
     goto    rojo2
@@ -238,7 +238,7 @@ amarillo3:
     bcf	    PORTE, 2
     bsf	    PORTE, 1
     bcf	    PORTE, 0
-    movlw   0			;titileo Sem1
+    movlw   0		;Parpadeo semaforo 3
     subwf   sem_3, 0	;Guarda en w
     btfsc   STATUS, 2
     goto    rojo3
@@ -248,117 +248,117 @@ rojo3:
     bcf	    PORTE, 1
     return      
    
-display0:
-    movlw   00001000B
-    movwf   banderas
-    movf    unidad2+1, w    ;Mover el valor de unidad2+1 (Tabla) a w
-    movwf   PORTC	    ;Mover w a PORTC
-    bsf	    PORTD, 7	    ;Encender bit D para controlar el display 
-    goto    Luces_semaforo  ;Vamos a la rutina de interrupcion del
+display0:		;Rutina de los controles de los displays 
+    movlw   00000010B	;Cambio de el valor de la variable bandera manualmente
+    movwf   banderas	
+    movf    unidad2+1,w ;Mando la variable unidad2+1 al puerto C	    
+    movwf   PORTC
+    bsf	    PORTD, 7	;Enciendo el bit del puerto D que controla el display
+    goto    Control_Luces ;Vamos a la rutina control de luces
 display1:
-    movlw   00010000B
-    movwf   banderas
-    movf    decena2+1, w	    ;Mover el valor de decena2+1 (Tabla) a w
-    movwf   PORTC	    ;Mover w a PORTC
-    bsf	    PORTD, 6	    ;Encender bit6 de PORTD para transistor 
-    goto    Luces_semaforo
-display2:
     movlw   00000100B
     movwf   banderas
-    movf    decena+1, w	   
+    movf    decena2+1, w	    
+    movwf   PORTC	    
+    bsf	    PORTD, 6	    
+    goto    Control_Luces
+display2:
+    movlw   00001000B
+    movwf   banderas
+    movf    decena+1, w	    
     movwf   PORTC	    
     bsf	    PORTD, 0	    
-    goto    Luces_semaforo	
+    goto    Control_Luces	
 display3:
-    movlw   00000010B
+    movlw   00010000B
     movwf   banderas  
-    movf    unidad+1, w	   
+    movf    unidad+1, w	    
     movwf   PORTC	    
     bsf	    PORTD, 1	    
-    goto    Luces_semaforo	
+    goto    Control_Luces	
     
 display4:
     movlw   00100000B
     movwf   banderas
     movf    unidad3+1, w	    
     movwf   PORTC	    
-    bsf	    PORTD, 3	    
-    goto    Luces_semaforo
+    bsf	    PORTD, 3	     
+    goto    Control_Luces
 display5:
     movlw   01000000B
     movwf   banderas
-    movf    decena3+1, w	   
+    movf    decena3+1, w	    
     movwf   PORTC	    
     bsf	    PORTD, 2	     
-    goto    Luces_semaforo    
+    goto    Control_Luces    
     
 display6:
     movlw   10000000B
     movwf   banderas
     movf    unidad4+1, w	    
     movwf   PORTC	    
-    bsf	    PORTD, 5	
+    bsf	    PORTD, 5	 
     
-    goto    Luces_semaforo
+    goto    Control_Luces
 display7:
     movlw   00000001B
     movwf   banderas
-    movf    decena4+1, w	    
+    movf    decena4+1, w	   
     movwf   PORTC	    
     bsf	    PORTD, 4	     
     movlw   0x00
-    movwf   banderas	    ;Mover literal a banderas
-    goto    Luces_semaforo    
+    movwf   banderas	    
+    goto    Control_Luces    
         
 ;-----------------------Interrupcion del puerto B-------------------------------
-IOCB_interrupt: 
-    movf    estado, W	;Movemos estado a w
-    clrf    PCLATH	;Limpiamos el PCLATH que sustituimos para las interrupciones
-    andlw   0x07	;Acortamos la variable estado
-    addwf   PCL		;me ayuda a ver que linea es el valor que esta buscando
-    goto    I_estado0	;Vamos a la rutina de I_estado0
+IOCB_interrupt:		    ;Rutina de interrupcion de los botones
+    movf    estado, W	    ;Movemos estado a w
+    clrf    PCLATH	    ;Limpiamos el PCLATH que sustituimos para las interrupciones
+    andlw   0x07	    ;Acortamos la variable estado
+    addwf   PCL		    ;me ayuda a ver que linea es el valor que esta buscando
+    goto    I_estado0	    ;Vamos a la rutina de I_estado0
     goto    I_estado1
     goto    I_estado2
     goto    I_estado3; 0
     goto    I_estado4
-    goto    Salida	 ;No se queda estancado en las 2 instrucciones que le faltan
+    goto    Salida
     goto    Salida
  
-I_estado0:		 ;Estado de interrupcion I_estado0
+I_estado0:		    ;Estado de interrupcion I_estado0
     banksel PORTB
-    bsf     PORTA, 2	 ;Encendemos la led verde le semaforo 1
-    btfsc   PORTB, MODO	 ;Revisamos el estado del boton MODO
-    goto    Salida	 ;Si no esta presionado nos vamos a la rutina salida
-    incf    estado	 ;Si esta presionado incrementamos la variable estado
-    movf    S1, W	 ;Movemos el valor de S1 a w
-    movwf   S1_temp	 ;Movemos w a S1_temp
+    bsf     PORTA, 2	    ;Encendemos la led verde le semaforo 1
+    btfsc   PORTB, MODO	    ;Revisamos el estado del boton MODO
+    goto    Salida	    ;Si no esta presionado nos vamos a la rutina salida
+    incf    estado	    ;Si esta presionado incrementamos la variable estado
+    movf    S1, W	    ;Movemos el valor de S1 a w
+    movwf   S1_temp	    ;Movemos w a S1_temp
     movf    S2, w
     movwf   S2_temp
     movf    SE3, w
     movwf   S3_temp
-    goto    Salida	 ;Nos movemos a la rutina de salida
+    goto    Salida	    ;Nos movemos a la rutina de salida
  
- I_estado1:
-    btfss   PORTB, INC	  ;Revisamos el estado del boton INC
-    incf    S1_temp, 1    ;Si esta presionado incrementa S1_temp 
-    movlw   21		  
-    subwf   S1_temp, 0	  ;Se le resta 21 a la variable S1_temp
-    btfsc   STATUS, 2	  ;Se revisa el estado de la bandera Zero Bit
-    goto    min		  ;Si la badera es 1 vamos a la rutina min
+ I_estado1:		    ;Configuración semaforo 1
+    btfss   PORTB, INC	    ;Revisamos el estado del boton INC
+    incf    S1_temp, 1	    ;Si esta presionado incrementa S1_temp 
+    movlw   21		 
+    subwf   S1_temp, 0	    ;Se le resta 21 a la variable S1_temp
+    btfsc   STATUS, 2	    ;Se revisa el estado de la bandera Zero Bit
+    goto    min		    ;Si la badera es 1 vamos a la rutina min
     
-    btfss   PORTB, DECRE  ;si la bancera es 0 revisamos el estado del boton DECRE
-    decf    S1_temp, 1	  ;Si esta presionado decrementa S1_temp
-    movlw   9		
-    subwf   S1_temp, 0	  ;Se le resta 9 a la variable S1_temp
-    btfsc   STATUS, 2	  ;Se revisa el estado de la bandera Zero Bit
-    goto    max		  ;Si la badera es 1 vamos a la rutina min
+    btfss   PORTB, DECRE    ;si la bancera es 0 revisamos el estado del boton DECRE
+    decf    S1_temp, 1	    ;Si esta presionado decrementa S1_temp
+    movlw   9
+    subwf   S1_temp, 0	    ;Se le resta 9 a la variable S1_temp
+    btfsc   STATUS, 2	    ;Se revisa el estado de la bandera Zero Bit
+    goto    max		    ;Si la badera es 1 vamos a la rutina max
     
-    btfss   PORTB, MODO	  ;Revisamos el esado del boton MODO
-    incf    estado	  ;Si se presiona incrementamos el estado
-    goto    Salida	  ;Si no se preciosa no lleva a la rutina Salida
- I_estado2:
+    btfss   PORTB, MODO	    ;Revisamos el esado del boton MODO
+    incf    estado	    ;Si se presiona incrementamos el estado
+    goto    Salida	    ;Si no se preciosa no lleva a la rutina Salida
+ I_estado2:		    ;Configuración semaforo 2
     btfss   PORTB, INC
-    incf    S2_temp, 1   ;se guarda en mismo registro 
+    incf    S2_temp, 1	    ;se guarda en mismo registro 
     movlw   21
     subwf   S2_temp, 0
     btfsc   STATUS, 2
@@ -374,9 +374,9 @@ I_estado0:		 ;Estado de interrupcion I_estado0
     btfss   PORTB, MODO
     incf    estado
     goto    Salida
- I_estado3:
+ I_estado3:		    ;Configuración semaforo 3
     btfss   PORTB, INC
-    incf    S3_temp, 1   ;se guarda en mismo registro 
+    incf    S3_temp, 1	    ;se guarda en mismo registro 
     movlw   21
     subwf   S3_temp, 0
     btfsc   STATUS, 2
@@ -392,19 +392,19 @@ I_estado0:		 ;Estado de interrupcion I_estado0
     btfss   PORTB, MODO
     incf    estado
     goto    Salida
- I_estado4:
-    btfss   PORTB, MODO
-    goto    prin_estado
-    btfss   PORTB, DECRE
-    clrf    estado
-    btfsc   PORTB, INC
-    goto    Salida
+ I_estado4:		    ;Rutina para aceptar o declinar los cambios
+    btfss   PORTB, MODO	    ;verificamos si el boton de modo se presiona
+    goto    prin_estado	    ;si se presiona se va a la rutina de principio de estado
+    btfss   PORTB, DECRE    ;revisamos si el boton DECRE esta presionado
+    clrf    estado	    ;si se presiona limpiamos la variable estado y se cancelan los cambios
+    btfsc   PORTB, INC	    ;revisamos si el boton INC esta presionado
+    goto    Salida	     ;si no se presiona nos vamos constantemente a la rutina Salida
     
-    movf    S1_temp, W
-    movwf   S1
+    movf    S1_temp, W	    ;Pasamos el valor de la variable temporal a W
+    movwf   S1		    ;El valor de W se lo pasamos a la variable S1 oficial
     movf    S1, W
-    movwf   sem_1
-    
+    movwf   sem_1	    ;Pasamos el valor de S1 a sem_1 que es el que nos servira en el semaforo
+	
     movf    S2_temp, W
     movwf   S2
     movf    S2, W
@@ -414,54 +414,61 @@ I_estado0:		 ;Estado de interrupcion I_estado0
     movwf   SE3
     movf    SE3, W
     movwf   sem_3
-    clrf    estado
-    clrf    PORTA
-    bsf     PORTA,3
+    clrf    estado	;limpiamos la varibale de estado
+    clrf    PORTA	;le damos valores inciales a las luces del semaforo
+    bsf     PORTA,3	
     bsf     PORTE,0
-Salida:
-    bcf	    RBIF
-    return
-prin_estado:
-    movlw   0x00
-    movwf   estado
-    goto    Salida
-;-------------------Limites----------------------------------------------------
-min:
-    movlw   10
-    movwf   S1_temp
-    bcf	    RBIF
+    
+Salida:			;Rutina de Salida
+    bcf	    RBIF	;Limpiamos la bandera 
     return
     
-max:
-    movlw   20
-    movwf   S1_temp
-    bcf	    RBIF
+prin_estado:		;Rutina de principio de estado
+    movlw   0x00	
+    movwf   estado	;Dejamos en cero la variable de estado
+    goto    Salida	;Vamos a la rutina de Salida
+;-------------------Limites----------------------------------------------------
+min:			;Rutina de valor minimo
+    movlw   10		
+    movwf   S1_temp	;Asignamos el valor de 10 a S1_temp
+    bcf	    RBIF	;Limpiamos la bandera
     return
+    
+max:			;Rutina de valor maximo
+    movlw   20		
+    movwf   S1_temp	;Asiganmos el valor de 20 a S1_temp
+    bcf	    RBIF	;Limpiamos la bandera
+    return
+    
 min2:
     movlw   10
     movwf   S2_temp
     bcf	    RBIF
     return
+    
 max2:
     movlw   20
     movwf   S2_temp
     bcf	    RBIF
     return
+    
 min3:
     movlw   10
     movwf   S3_temp
     bcf	    RBIF
     return
+    
 max3:
     movlw   20
     movwf   S3_temp
     bcf	    RBIF
     return
 ;------------------------Interrupcion del puerto 2------------------------------    
-TMR2_interrupt:	    ;tiempo del parpadeo
-    BCF    TMR2IF
-    INCF   parpadeo
+TMR2_interrupt:		;Rutina de tiempo del parpadeo
+    bcf    TMR2IF	;Apgamos la bandera del timer 2
+    incf   parpadeo	;Incrementamos la variable parpadeo
     return
+    
   PSECT code, delta=2, abs
   ORG 180h	;Posición para el código
  ;------------------ TABLA -----------------------
@@ -508,23 +515,23 @@ TMR2_interrupt:	    ;tiempo del parpadeo
     clrf    TRISD
     clrf    TRISE
     
-    banksel PORTA	;reiniciar los puertos
+    banksel PORTA       ;reiniciar los puertos
     clrf    PORTA
     clrf    PORTB
     clrf    PORTC
     clrf    PORTD
     clrf    PORTE
-    call    config_reloj
-    call    config_IOChange
-    call    config_tmr0
-    call    config_tmr1
-    call    config_tmr2
-    call    config_InterrupEnable  
-    
-;--------------Actualizacion de valores-----------------------------------------    
+    call    config_reloj    ;Llamamos a la rutina de configuración del reloj
+    call    config_IO	    ;Configuracion de interrupcion del puerto B
+    call    config_tmr0	    ;Configuración del timer0
+    call    config_tmr1	    ;Configuración del timer1
+    call    config_tmr2	    ;Configuración del timer2
+    call    config_IE	    ;Configuración de las interrupciones
+
+;--------------Actualizacion de valores-----------------------------------------        
     banksel PORTA 
     clrf    estado
-    movlw   0x0C
+    movlw   0x0E
     movwf   S1
     movf    S1, W
     movwf   sem_1
@@ -536,93 +543,94 @@ TMR2_interrupt:	    ;tiempo del parpadeo
     movwf   SE3
     movf    SE3, w
     movwf   sem_3
-    bsf	    PORTA, 2	;Rojo del semaforo 3
-    bcf	    PORTA, 1	;Amarillo del semaforo 1
-    bsf	    PORTA, 3	;verde del semaforo 2
-    clrf    PORTE
-    bsf	    PORTE, 0	;Rojo del semaforo 3
+    bsf	    PORTA, 2
+    bcf	    PORTA, 1
+    bsf	    PORTA, 3
+    bsf	    PORTE, 0
 
     
-;---------------------------loop principal---------------------
+;----------loop principal---------------------
  loop:
-    btfss   TMR1IF	    ;Funcionamiento semaforo1
-    goto    $-1
-    reiniciar_Tmr1
-    call    inicio1
+    btfss   TMR1IF	    ;Funcionamiento semaforo
+    goto    $-1		    ;Si la bandera esta abajo regresa a evaluarse
+    reiniciar_Tmr1	    ;Si la bandera esta arriba reiniciamos el timer 1
+    call    inicio1	    ;vamos a la rutina de inicio
     
-    movf    sem_1, w    ;Displays semaforo1
-    movwf   v1
-    call    Decenas	
-    call    dispdecimal
+    movf    sem_1, w	    ;Displays semaforo1
+    movwf   v1		    ;Pasamos el valor de sem_1 a la variable v1
+    call    Decenas	    ;Subrutina para contador decimal
+    call    dispdecimal	    ;Llamamos a la rutina de dispdecimal
     
-    movf    sem_2, w    ;Displays semaforo2    
+    movf    sem_2, w	    ;Displays semaforo2    
     movwf   v3
     call    Decenas3	
     call    dispdecimal3
     
-    movf    sem_3, w    ;Displays semaforo1    
+    movf    sem_3, w	    ;Displays semaforo1    
     movwf   v4
     call    Decenas4	
     call    dispdecimal4
        
-    bcf	    GIE
-    movf    estado, W
-    clrf    PCLATH
-    bsf	    PCLATH, 0
-    andlw   0x07
-    addwf   PCL
-    goto    estado0
+    bcf	    GIE		    ;Limpiamos la bandera de las interrupciones globales
+    movf    estado, W	    ;Paso el valor de estado a w
+    clrf    PCLATH	    ;limpiamos PCLATH
+    bsf	    PCLATH, 0	    
+    andlw   0x07	    ;Acosrtamos los bits de la variable estado
+    addwf   PCL		    ;PCL no ayudara a recorre
+    goto    estado0	    ;vamos a la rutina de estado 0
     goto    estado1
     goto    estado2
     goto    estado3
     goto    estado4
     goto    loop
     goto    loop
- estado0:
-    bsf	    GIE
-    clrf    valor    
-    bcf	    PORTB, 3
+    
+ estado0:		   ;Rutina de interrupcion de estado 0
+    bsf	    GIE		   ;Encendemos la bandera de interrupcion globales
+    clrf    valor	   ;Limpiamos la variable de valor
+    bcf	    PORTB, 3	   ;vamos encendiendo las leds que indiquen el semaforo a modificar
     bcf	    PORTB, 4
     bcf	    PORTB, 5   
     goto    loop    ;loop forever
- estado1:		;Semaforo 1
+ estado1:
     bsf	    GIE
-    movf    S1_temp, w
-    movwf   v2
+    movf    S1_temp, w	 
+    movwf   v2		;Pasamos el valor de la variable S1_temp a v2
     call    Decenas1	;Subrutina de división para contador DECIMAL 
-    call    dispdecimal1
+    call    dispdecimal1 ;Rutina para preparar variables para los displays
     bsf	    PORTB, 3
     bcf	    PORTB, 4
     bcf	    PORTB, 5
     goto    loop
- estado2:		;Semaforo 2
+ estado2:
     bsf	    GIE
     movf    S2_temp, w
     movwf   v2
-    call    Decenas1	;Subrutina de división para contador DECIMAL 
+    call    Decenas1	//Subrutina de división para contador DECIMAL 
     call    dispdecimal1
     bcf	    PORTB, 3
     bsf	    PORTB, 4
     bcf	    PORTB, 5
     goto    loop
- estado3:		;Semaforo 3
+ estado3:
     bsf	    GIE
     movf    S3_temp, w
     movwf   v2
-    call    Decenas1	;Subrutina de división para contador DECIMAL 
+    call    Decenas1	//Subrutina de división para contador DECIMAL 
     call    dispdecimal1
     bcf	    PORTB, 3
     bcf	    PORTB, 4
     bsf	    PORTB, 5
     goto    loop
- estado4:		;Confirmacion
+ estado4:
     bsf	    GIE
     bsf	    PORTB, 3
     bsf	    PORTB, 4
     bcf	    PORTB, 5
     goto    loop
 ;------------sub rutinas---------------------    
-inicio1:    ;Se le ponen valores iniciales a los semaforos
+inicio1: 
+    
     movlw   0x00
     subwf   sem_1
     btfsc   STATUS, 2
@@ -642,10 +650,10 @@ inicio2:
     return 
     
 inicio3:
-    bsf	    PORTE, 2	;semaforo 3 en verde
-    bsf	    PORTA, 0	;semaforo 1 en rojo
-    bsf	    PORTA, 3	;semaforo 2 en rojo
-    bcf     PORTE, 0	;rojo de semaforo 3 apagado
+    bsf	    PORTE, 2
+    bsf	    PORTA, 0
+    bsf	    PORTA, 3
+    bcf     PORTE, 0
     clrf    sem_2
     movlw   0x00
     subwf   sem_3  
@@ -654,16 +662,16 @@ inicio3:
     decf    sem_3
     return 
     
-asignarvalor: ;paso el valor de las variables S a las variables de los semaforos
-    movf    S1, W
-    movwf   sem_1
+asignarvalor:	;Rutina para asignar valores
+    movf    S1, W   
+    movwf   sem_1   ;Movemos el valor de S1 a sem_1
     movf    S2, W
     movwf   sem_2
     movf    SE3, W
     movwf   sem_3
     movlw   00001100B
-    movwf   PORTA
-    bsf	    PORTE, 0
+    movwf   PORTA   ;encendemos el verde del S1 y el rojo del S2
+    bsf	    PORTE, 0;Encendemos el rojo del S3
     return
 
 ;------------------DivisiónRutinaPrincipal-------------------
@@ -697,10 +705,10 @@ Unidades:
 ;---------------------------RutinaSemaforo1---------------------------
 dispdecimal1:
     movf    decena2, w	
-    call    Tabla	;Asignamos el valor de decena a un valor de la tabla displays
+    call    Tabla   ;Asignamos el valor de decena a un valor de la tabla displays
     movwf   decena2+1	;Lo guardamos en variable decena2+1
     movf    unidad2, w
-    call    Tabla	;Asignamos el valor de unidad a un valor de la tabla displays
+    call    Tabla   ;Asignamos el valor de unidad a un valor de la tabla displays
     movwf   unidad2+1	;Lo guardamos en variable unidad2+1
     return
 Decenas1:
@@ -780,7 +788,7 @@ Unidades4:
     incf    unidad4, 1	;Incrementar variable unidad
     goto    $-5		;Ejecutar de nuevo resta de unidad    
 ;-------------------------------------------------------------------------------    
-config_IOChange:
+config_IO:		;Rutina de configuracionde los botones
     banksel TRISA
     bsf	    IOCB, MODO
     bsf	    IOCB, INC
@@ -789,19 +797,19 @@ config_IOChange:
     banksel PORTA
     movf    PORTB, W	;Condición mismatch
     return
-    
- config_tmr0:
-    banksel OPTION_REG   ;Banco de registros asociadas al puerto A
-    bcf	    T0CS    ; reloj interno clock selection
-    bcf	    PSA	    ;Prescaler 
+	
+ config_tmr0:		;Configuración del timer 0
+    banksel OPTION_REG  ;Banco de registros asociadas al puerto A
+    bcf	    T0CS	; reloj interno clock selection
+    bcf	    PSA		;Prescaler 
     bcf	    PS2
     bcf	    PS1
-    bsf	    PS0	    ;PS = 111 Tiempo en ejecutar , 256
+    bsf	    PS0		;PS = 111 Tiempo en ejecutar , 256
     
-    reiniciar_Tmr0  ;Macro reiniciar tmr0
+    reiniciar_Tmr0	;Macro reiniciar tmr0
     return
     
- config_tmr1:
+ config_tmr1:		;Configuración del timer 1
     banksel T1CON
     bcf	    TMR1GE	;tmr1 como contador
     bcf	    TMR1CS	;Seleccionar reloj interno (FOSC/4)
@@ -810,11 +818,11 @@ config_IOChange:
     bsf	    T1CKPS1	;Preescaler 10 = 1:4
     bcf	    T1CKPS0 
     
-    reiniciar_Tmr1
+    reiniciar_Tmr1	;Macro de reinicio de timer 0
     return
  
 
- config_tmr2:
+ config_tmr2:		;Configuración del timer 2
     banksel T2CON
     bsf	    T2CON, 7 
     bsf	    TMR2ON
@@ -828,7 +836,7 @@ config_IOChange:
     reiniciar_tmr2
     return
     
- config_reloj:
+ config_reloj:		;Rutina de configuraciond del reloj
     banksel OSCCON	;Banco OSCCON 
     bsf	    IRCF2	;OSCCON configuración bit2 IRCF
     bcf	    IRCF1	;OSCCON configuracuón bit1 IRCF
@@ -837,7 +845,7 @@ config_IOChange:
     return
     
 
-config_InterrupEnable:
+config_IE:		;Configuración de las interrupciones
     BANKSEL PIE1
     bsf	    T0IE	;Habilitar bit de interrupción tmr0
     BSF     TMR2IE
