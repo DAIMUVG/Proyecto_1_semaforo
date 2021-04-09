@@ -126,7 +126,7 @@ reiniciar_tmr2 macro	//Macro reinicio Tmr2
     swapf   w_temp, F
     swapf   w_temp, W
     retfie
-;---------SubrutinasInterrupción-----------
+;---------SubrutinasInterrupción------------------------------------------------
 TMR0_interrupt:
     reiniciar_Tmr0	;2 ms
     Bcf	    STATUS, 0
@@ -149,7 +149,7 @@ TMR0_interrupt:
     goto    display7	      ;Llamar a subrutina de displaydecena
     movlw   00000001B
     movwf   banderas
-
+;---------Control de luces------------------------------------------------------
 Control_Luces:    
     movlw   4		    ;Parpadeo y luz amarilla semaforo 3
     subwf   sem_3, 0	    ;se le resta un valor de 4 a la variable sem_3
@@ -182,7 +182,7 @@ tit2:			    ;Parpadeo y luz amarilla semaforo 2
     btfss   STATUS, 0
     GOTO    Parpadeo2
     return
-    
+;-----------------------Control de parpadeo Luces-------------------------------
 Parpadeo1:		;Rutina para controlar el parpadeo de la led verde
     btfss   parpadeo, 0	;revisamos el valor del parpadeo
     goto    apagardisp	;vamos a la rutina de apagar el display
@@ -206,7 +206,7 @@ apagardisp:
     bcf	    PORTA, 5	;Apagamos la led verde del semaforo 2
     bcf	    PORTE, 2	;Apagamos la led verde del semaforo 3
     return
-
+;------------subrutinas para el cambio de color---------------------------------
 amarillo1:		;Rutina de interrupcion de la led amarilla
     bcf	    PORTA, 0	;Apagamos la led roja
     bsf	    PORTA, 1	;Encendemos la led amarilla
@@ -247,7 +247,7 @@ rojo3:
     bcf	    PORTE, 2
     bcf	    PORTE, 1
     return      
-   
+;--------------------Control de los displays-----------------------------------
 display0:		;Rutina de los controles de los displays 
     movlw   00000010B	;Cambio de el valor de la variable bandera manualmente
     movwf   banderas	
@@ -321,7 +321,7 @@ IOCB_interrupt:		    ;Rutina de interrupcion de los botones
     goto    I_estado2
     goto    I_estado3; 0
     goto    I_estado4
-    goto    Salida
+    goto    Salida	    ;No se queda estancado en las 2 instrucciones que le faltan
     goto    Salida
  
 I_estado0:		    ;Estado de interrupcion I_estado0
@@ -471,7 +471,7 @@ TMR2_interrupt:		;Rutina de tiempo del parpadeo
     
   PSECT code, delta=2, abs
   ORG 180h	;Posición para el código
- ;------------------ TABLA -----------------------
+ ;------------------ TABLA -----------------------------------------------------
   Tabla:
     clrf  PCLATH
     bsf   PCLATH,0
@@ -585,14 +585,14 @@ TMR2_interrupt:		;Rutina de tiempo del parpadeo
     goto    loop
     goto    loop
     
- estado0:		   ;Rutina de interrupcion de estado 0
+ estado0:		   ;Rutina de estado 0 (estado normal)
     bsf	    GIE		   ;Encendemos la bandera de interrupcion globales
     clrf    valor	   ;Limpiamos la variable de valor
     bcf	    PORTB, 3	   ;vamos encendiendo las leds que indiquen el semaforo a modificar
     bcf	    PORTB, 4
     bcf	    PORTB, 5   
     goto    loop    ;loop forever
- estado1:
+ estado1:		    ;Semaforo 1
     bsf	    GIE
     movf    S1_temp, w	 
     movwf   v2		;Pasamos el valor de la variable S1_temp a v2
@@ -602,33 +602,33 @@ TMR2_interrupt:		;Rutina de tiempo del parpadeo
     bcf	    PORTB, 4
     bcf	    PORTB, 5
     goto    loop
- estado2:
+ estado2:		;Semaforo 2
     bsf	    GIE
     movf    S2_temp, w
     movwf   v2
-    call    Decenas1	//Subrutina de división para contador DECIMAL 
+    call    Decenas1	;ubrutina de división para contador DECIMAL 
     call    dispdecimal1
     bcf	    PORTB, 3
     bsf	    PORTB, 4
     bcf	    PORTB, 5
     goto    loop
- estado3:
+ estado3:		;Semaforo 1
     bsf	    GIE
     movf    S3_temp, w
     movwf   v2
-    call    Decenas1	//Subrutina de división para contador DECIMAL 
+    call    Decenas1	;Subrutina de división para contador DECIMAL 
     call    dispdecimal1
     bcf	    PORTB, 3
     bcf	    PORTB, 4
     bsf	    PORTB, 5
     goto    loop
- estado4:
+ estado4:		;Aceptación o rechazar
     bsf	    GIE
     bsf	    PORTB, 3
     bsf	    PORTB, 4
     bcf	    PORTB, 5
     goto    loop
-;------------sub rutinas---------------------    
+;------------sub rutinas--------------------------------------------------------  
 inicio1: 
     
     movlw   0x00
@@ -787,7 +787,7 @@ Unidades4:
     return		;Return a donde fue llamado
     incf    unidad4, 1	;Incrementar variable unidad
     goto    $-5		;Ejecutar de nuevo resta de unidad    
-;-------------------------------------------------------------------------------    
+;---------------------------Rutinas de configuración----------------------------   
 config_IO:		;Rutina de configuracionde los botones
     banksel TRISA
     bsf	    IOCB, MODO
