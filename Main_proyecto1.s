@@ -210,7 +210,7 @@ apagardisp:
 amarillo1:		;Rutina de interrupcion de la led amarilla
     bcf	    PORTA, 0	;Apagamos la led roja
     bsf	    PORTA, 1	;Encendemos la led amarilla
-    bcf	    PORTA, 2	;Apagamos la led roja
+    bcf	    PORTA, 2	;Apagamos la led verde
     movlw   0		;Parpadeo semaforo 1
     subwf   sem_1, 0	;Restamos el valor de w a sem_1
     btfsc   STATUS, 2	;Revisamos la bandera de Zero Bit
@@ -629,7 +629,7 @@ TMR2_interrupt:		;Rutina de tiempo del parpadeo
     bcf	    PORTB, 5
     goto    loop
 ;------------sub rutinas--------------------------------------------------------  
-inicio1: 
+inicio1:		;Luces
     
     movlw   0x00
     subwf   sem_1
